@@ -18,14 +18,14 @@ public class DaenceTests
             "404142434445464748494a4b4c4d4e4f"
         };
     }
-    
+
     public static IEnumerable<object[]> InvalidParameterSizes()
     {
         yield return new object[] { Daence.TagSize, 1, Daence.KeySize, Daence.TagSize };
         yield return new object[] { Daence.TagSize, 0, Daence.KeySize + 1, Daence.TagSize };
         yield return new object[] { Daence.TagSize, 0, Daence.KeySize - 1, Daence.TagSize };
     }
-    
+
     [TestMethod]
     [DynamicData(nameof(TestVectors), DynamicDataSourceType.Method)]
     public void Encrypt_Valid(string ciphertext, string plaintext, string key, string associatedData)
@@ -34,12 +34,12 @@ public class DaenceTests
         Span<byte> p = Convert.FromHexString(plaintext);
         Span<byte> k = Convert.FromHexString(key);
         Span<byte> ad = Convert.FromHexString(associatedData);
-        
+
         Daence.Encrypt(c, p, k, ad);
-        
+
         Assert.AreEqual(ciphertext, Convert.ToHexString(c).ToLower());
     }
-    
+
     [TestMethod]
     [DynamicData(nameof(InvalidParameterSizes), DynamicDataSourceType.Method)]
     public void Encrypt_Invalid(int ciphertextSize, int plaintextSize, int keySize, int associatedDataSize)
@@ -48,10 +48,10 @@ public class DaenceTests
         var p = new byte[plaintextSize];
         var k = new byte[keySize];
         var ad = new byte[associatedDataSize];
-        
+
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => Daence.Encrypt(c, p, k, ad));
     }
-    
+
     [TestMethod]
     [DynamicData(nameof(TestVectors), DynamicDataSourceType.Method)]
     public void Decrypt_Valid(string ciphertext, string plaintext, string key, string associatedData)
@@ -60,12 +60,12 @@ public class DaenceTests
         Span<byte> c = Convert.FromHexString(ciphertext);
         Span<byte> k = Convert.FromHexString(key);
         Span<byte> ad = Convert.FromHexString(associatedData);
-        
+
         Daence.Decrypt(p, c, k, ad);
-        
+
         Assert.AreEqual(plaintext, Convert.ToHexString(p).ToLower());
     }
-    
+
     [TestMethod]
     [DynamicData(nameof(TestVectors), DynamicDataSourceType.Method)]
     public void Decrypt_Tampered(string ciphertext, string plaintext, string key, string associatedData)
@@ -77,14 +77,14 @@ public class DaenceTests
             Convert.FromHexString(key),
             Convert.FromHexString(associatedData)
         };
-        
+
         foreach (var param in parameters) {
             param[0]++;
             Assert.ThrowsException<CryptographicException>(() => Daence.Decrypt(p, parameters[0], parameters[1], parameters[2]));
             param[0]--;
         }
     }
-    
+
     [TestMethod]
     [DynamicData(nameof(InvalidParameterSizes), DynamicDataSourceType.Method)]
     public void Decrypt_Invalid(int ciphertextSize, int plaintextSize, int keySize, int associatedDataSize)
@@ -93,7 +93,7 @@ public class DaenceTests
         var c = new byte[ciphertextSize];
         var k = new byte[keySize];
         var ad = new byte[associatedDataSize];
-        
+
         Assert.ThrowsException<ArgumentOutOfRangeException>(() => Daence.Decrypt(p, c, k, ad));
     }
 }
